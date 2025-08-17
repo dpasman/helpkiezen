@@ -1,9 +1,57 @@
 import React from 'react'
-// ...imports bovenaan blijven gelijk
-import HelpKiezenWizard from '../components/HelpKiezenWizard.jsx';
+import HelpKiezenWizard from '../components/HelpKiezenWizard.jsx'
+
+// --- Mapping helpers for Bol.com ---
+const BOL_CATEGORY_PATH = {
+  integrated: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  'semi-integrated': 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  undercounter: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  freestanding: 'https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/18293/',
+};
+
+// Price buckets → tweak ranges if you prefer
+const PRICE_BUCKETS = {
+  none: null,
+  budget: [0, 400],
+  mid: [400, 800],
+  premium: [800, 9999],
+};
+
+// Build Bol.com URL with filters
+function buildBolUrl(selections, { affiliateTag } = {}) {
+  const category = selections.category;
+  const base = BOL_CATEGORY_PATH[category] || BOL_CATEGORY_PATH.freestanding;
+
+  const params = new URLSearchParams();
+
+  // Noise (e.g., "43-45")
+  if (selections.noise && selections.noise !== 'none') {
+    params.set('filter_Geluidsniveau', selections.noise);
+  }
+
+  // Price bucket → "min-max"
+  const bucket = PRICE_BUCKETS[selections.price || 'none'];
+  if (bucket) {
+    params.set('filter_Prijs', `${bucket[0]}-${bucket[1]}`);
+  }
+
+  // Optional: energy / brand in the future
+  // if (selections.energy) params.set('filter_Energieklasse', selections.energy);
+  // if (selections.brand)  params.set('filter_Merk', selections.brand);
+
+  // Affiliate tag (optional)
+  if (affiliateTag) {
+    // If your program requires a specific param name, change here
+    params.set('aff', affiliateTag);
+  }
+
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
+}
 
 function getDishwasherSteps(selections) {
   const mode = selections.mode || null;
+
   const base = [{
     key: 'mode',
     title: 'Hoe wil je kiezen?',
@@ -14,7 +62,6 @@ function getDishwasherSteps(selections) {
     ],
   }];
 
-  // categorie (vrijstaand / inbouw-varianten)
   const categoryStep = {
     key: 'category',
     title: 'Type vaatwasser',
@@ -27,42 +74,86 @@ function getDishwasherSteps(selections) {
     ],
   };
 
+  const commonNoisePrice = [
+    {
+      key: 'noise',
+      title: 'Geluidsniveau',
+      subtitle: 'Optioneel.',
+      options: [
+        { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
+        { id: '41-42', label: '41–42 dB' },
+        { id: '43-45', label: '43–45 dB' },
+        { id: '46-plus', label: '46+ dB' },
+      ],
+    },
+    {
+      key: 'price',
+      title: 'Prijs',
+      subtitle: 'Wordt gefilterd in Bol.com resultaat.',
+      options: [
+        { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
+        { id: 'budget', label: 'Budget', caption: 'Tot ± €400' },
+        { id: 'mid', label: 'Midden', caption: '€400–€800' },
+        { id: 'premium', label: 'Premium', caption: '€800+' },
+      ],
+    },
+  ];
+// --- Mapping helpers for Bol.com ---
+const BOL_CATEGORY_PATH = {
+  integrated: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  'semi-integrated': 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  undercounter: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  freestanding: 'https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/18293/',
+};
+
+// Price buckets → tweak ranges if you prefer
+const PRICE_BUCKETS = {
+  none: null,
+  budget: [0, 400],
+  mid: [400, 800],
+  premium: [800, 9999],
+};
+
+// Build Bol.com URL with filters (+ rating=all by default)
+function buildBolUrl(selections, { affiliateTag } = {}) {
+  const category = selections.category;
+  const base = BOL_CATEGORY_PATH[category] || BOL_CATEGORY_PATH.freestanding;
+
+  const params = new URLSearchParams();
+
+  // Default: show all ratings (matches your example)
+  params.set('rating', 'all');
+
+  // Noise (e.g., "43-45")
+  if (selections.noise && selections.noise !== 'none') {
+    params.set('filter_Geluidsniveau', selections.noise);
+  }
+
+  // Price bucket → "min-max"
+  const bucket = PRICE_BUCKETS[selections.price || 'none'];
+  if (bucket) {
+    params.set('filter_Prijs', `${bucket[0]}-${bucket[1]}`);
+  }
+
+  // Optional: future filters
+  // if (selections.energy) params.set('filter_Energieklasse', selections.energy);
+  // if (selections.brand)  params.set('filter_Merk', selections.brand);
+
+  if (affiliateTag) {
+    // Pas de naam aan als jouw partnerprogramma een andere param verwacht
+    params.set('aff', affiliateTag);
+  }
+
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
+}
+
+
   if (mode === 'standard') {
     return [
       ...base,
       categoryStep,
-      {
-        key: 'niche_width',
-        title: 'Breedte / nis',
-        subtitle: 'Kies 45 of 60 cm (optioneel).',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: '45-cm', label: '45 cm', caption: 'Smal model' },
-          { id: '60-cm', label: '60 cm', caption: 'Normaal model' },
-        ],
-      },
-      {
-        key: 'noise',
-        title: 'Geluidsniveau',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: '41-42', label: '41–42 dB' },
-          { id: '43-45', label: '43–45 dB' },
-          { id: '46-plus', label: '46+ dB' },
-        ],
-      },
-      {
-        key: 'price',
-        title: 'Prijs (indicatie)',
-        subtitle: 'Wordt niet in de URL gefilterd.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: 'budget', label: 'Budget', caption: 'Tot ± €400' },
-          { id: 'mid', label: 'Midden', caption: '€400–€800' },
-          { id: 'premium', label: 'Premium', caption: '€800+' },
-        ],
-      },
+      ...commonNoisePrice,
     ];
   }
 
@@ -70,134 +161,24 @@ function getDishwasherSteps(selections) {
     return [
       ...base,
       categoryStep,
-      {
-        key: 'hinge',
-        title: 'Scharniersysteem',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: 'deur-op-deur', label: 'Deur-op-deur' },
-          { id: 'sleepdeur', label: 'Sleepdeur' },
-        ],
-      },
-      {
-        key: 'niche_width',
-        title: 'Breedte / nis',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: '45-cm', label: '45 cm' },
-          { id: '60-cm', label: '60 cm' },
-        ],
-      },
-      {
-        key: 'niche_depth',
-        title: 'Nisdiepte',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: '58-cm', label: '58 cm' },
-          { id: '55-cm', label: '55 cm' },
-        ],
-      },
-      {
-        key: 'drying',
-        title: 'Droogtechniek',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: 'ventilatiedroogtechniek', label: 'Ventilatiedroogtechniek' },
-          { id: 'condensdroogtechniek', label: 'Condensdroogtechniek' },
-        ],
-      },
-      {
-        key: 'noise',
-        title: 'Geluidsniveau',
-        subtitle: 'Optioneel.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: '41-42', label: '41–42 dB' },
-          { id: '43-45', label: '43–45 dB' },
-          { id: '46-plus', label: '46+ dB' },
-        ],
-      },
-      {
-        key: 'price',
-        title: 'Prijs (indicatie)',
-        subtitle: 'Indicatief; niet gefilterd.',
-        options: [
-          { id: 'none', label: 'Geen voorkeur', caption: 'Overslaan' },
-          { id: 'budget', label: 'Budget', caption: 'Tot ± €400' },
-          { id: 'mid', label: 'Midden', caption: '€400–€800' },
-          { id: 'premium', label: 'Premium', caption: '€800+' },
-        ],
-      },
+      // We intentionally keep only filters we can map reliably to Bol.com:
+      // hinge/drying often aren't stable query keys on bol.com, so we omit them for now.
+      ...commonNoisePrice,
     ];
   }
 
   return base;
 }
 
-// ---- New: Coolblue slug mapping per category ----
-function buildCoolblueUrl(selections) {
-  const cat = selections.category;
-
-  const basePath = {
-    integrated: 'vaatwassers/inbouw/geintegreerde-vaatwassers',
-    'semi-integrated': 'vaatwassers/inbouw/half-geintegreerde-vaatwassers',
-    undercounter: 'vaatwassers/inbouw/onderbouw',
-    freestanding: 'vaatwassers/vrijstaand',
-  }[cat] || 'vaatwassers';
-
-  const segs = [];
-
-  // 1) Breedte / model
-  if (selections.niche_width && selections.niche_width !== 'none') {
-    if (cat === 'freestanding') {
-      if (selections.niche_width === '45-cm') {
-        segs.push('model-vaatwasser:smal-45-cm-breed'); // vrijstaand 45 cm
-      }
-      // 60 cm vrijstaand is "normaal" → geen segment nodig
-    } else {
-      // inbouw: echte nis-breedte
-      segs.push(`geschikt-voor-nisbreedte:${selections.niche_width}`);
-    }
-  }
-
-  // 2) Nisdiepte (alleen inbouw)
-  if (selections.niche_depth && selections.niche_depth !== 'none' && cat !== 'freestanding') {
-    segs.push(`geschikt-voor-nisdiepte:${selections.niche_depth}`);
-  }
-
-  // 3) Scharniersysteem (alleen inbouw)
-  if (selections.hinge && selections.hinge !== 'none' && cat !== 'freestanding') {
-    segs.push(`scharniersysteem:${selections.hinge}`);
-  }
-
-  // 4) Droogtechniek
-  if (selections.drying && selections.drying !== 'none') {
-    segs.push(`droogtechniek:${selections.drying}`);
-  }
-
-  // 5) Geluidsniveau
-  if (selections.noise && selections.noise !== 'none') {
-    segs.push(`maximaal-geluidsniveau:${selections.noise}`);
-  }
-
-  // Prijs: indicatief → NIET mappen
-
-  let url = `https://www.coolblue.nl/${basePath}`;
-  if (segs.length) url += '/' + segs.join('/');
-  return url;
-}
-
 export default function Vaatwassers() {
+  // If you have an affiliate tag, pass it here
+  const AFFILIATE_TAG = ''; // e.g. 'partner123'
+
   return (
     <HelpKiezenWizard
       topic="vaatwasser"
-      marketplace="coolblue"
       steps={getDishwasherSteps}
-      buildUrl={buildCoolblueUrl}
+      buildUrl={(selections) => buildBolUrl(selections, { affiliateTag: AFFILIATE_TAG })}
       interactive={true}
     />
   );

@@ -1,0 +1,25 @@
+--- a/src/main.jsx
++++ b/src/main.jsx
+@@
+-import React from 'react'
+-import ReactDOM from 'react-dom/client'
+-import App from './App.jsx'
++import React from 'react'
++import { createRoot, hydrateRoot } from 'react-dom/client'
++import App from './App.jsx'
+
+-ReactDOM.createRoot(document.getElementById('root')).render(
+-  <React.StrictMode>
+-    <App />
+-  </React.StrictMode>,
+-)
++const el = document.getElementById('root')
++if (el && el.hasChildNodes()) {
++  hydrateRoot(el, <App />)
++} else {
++  createRoot(el).render(
++    <React.StrictMode>
++      <App />
++    </React.StrictMode>
++  )
++}
