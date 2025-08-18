@@ -225,7 +225,7 @@ const faqItems = [
   { q: "Welke extra functies zijn handig in een vaatwasser?",
     a: "Besteklade, automatische deuropening voor beter drogen, intensieve zone voor pannen en een halflaad-programma zijn populaire opties." },
   { q: "Hoe HelpKiezen werkt",
-    a: "We helpen je snel kiezen en sturen je vervolgens door naar partners met jouw filters toegepast. Soms ontvangen we een commissie als je iets koopt via onze links; dit verandert jouw prijs niet. We zijn o.a. affiliate van bol.com. We tonen altijd keuzes op basis van jouw selectie."
+    a: "We helpen je snel kiezen en sturen je vervolgens door naar partners met jouw filters toegepast. Soms ontvangen we een commissie als je iets koopt via onze links; dit verandert jouw prijs niet. We zijn o.a. affiliate van ... We tonen altijd keuzes op basis van jouw selectie."
   }
 ]
 
