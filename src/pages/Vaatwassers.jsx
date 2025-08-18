@@ -7,14 +7,54 @@ import { Breadcrumbs } from "../components/Breadcrumbs"
 import { Faq } from "../components/Faq"
 import { Disclosure } from "../components/Disclosure"
 
-// --- (alleen nog nodig voor je interne URL als je ooit wil switchen) ---
-const CATEGORY_PATH = {
-  integrated: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
-  'semi-integrated': 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
-  undercounter: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
-  freestanding: 'https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/18293/',
-};
+// --- Verified bol.com mappings ---
+// Category bases (end with /{catId}/)
+const CATEGORY_BASE = {
+  integrated: "https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/",
+  "semi-integrated": "https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/",
+  undercounter: "https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/",
+  freestanding: "https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/18293/",
+}
 
+// Placement facet IDs (only for inbouw varianten)
+const PLACEMENT_IDS = {
+  integrated: "4797281775",       // Volledig integreerbaar
+  "semi-integrated": "4797382560",// Half integreerbaar
+  undercounter: "4288488028",     // Onderbouw
+}
+
+// Width facet IDs (category-specific)
+const WIDTH_IDS = {
+  inbouw: { "45": "22706", "60": "22707" },
+  vrijstaand: { "45": "22630", "60": "22629" },
+}
+
+// Noise facet IDs
+const NOISE_IDS = {
+  "41-42": "10847",   // Stil (tot 42 dB)
+  "43-45": "10848",   // Normaal (42–49 dB)
+  "46-plus": "10849", // Luid (49+ dB)
+}
+
+// Energy single label IDs
+const ENERGY_LABEL_IDS = {
+  A: "61293",
+  B: "58910",
+  C: "58369",
+  D: "58370",
+  E: "58372",
+  F: "58373",
+}
+
+// Energy groups → arrays of label letters
+const ENERGY_GROUPS = {
+  none: [],
+  zuinig: ["A", "B"],       // A–B
+  gemiddeld: ["C", "D"],    // C–D
+  laag: ["E", "F"],         // E–F
+}
+
+// Price buckets → we can only sort (no range filter in URL)
 const PRICE_BUCKETS = {
   none: null,
   budget: [0, 400],
@@ -22,99 +62,59 @@ const PRICE_BUCKETS = {
   premium: [800, 9999],
 }
 
+// Build bol URL with plus-separated IDs in PATH (not encoded in code)
 function buildInternalUrl(selections) {
-  const category = selections.category
-  const base = CATEGORY_PATH[category] || CATEGORY_PATH.freestanding
-  const params = new URLSearchParams()
-  if (selections.noise && selections.noise !== "none") params.set("noise", selections.noise)
-  const bucket = PRICE_BUCKETS[selections.price || "none"]
-  if (bucket) params.set("price", `${bucket[0]}-${bucket[1]}`)
-  const q = params.toString()
-  return q ? `${base}?${q}` : base
-}
+  const categoryKey = selections.category || "freestanding"
+  const base = CATEGORY_BASE[categoryKey] || CATEGORY_BASE.freestanding
 
-/* ---------------- bol.com deeplink builder ----------------
-   Bewezen IDs:
-   - Categorie inbouw: 18294
-   - Geluidsniveau (groep 42814):
-       quiet(41–42)=10847, normal(43–45)=10848, loud(46+)=10849  → segment "42814+<id>"
-   - Energielabels (voor groepjes in één segment):
-       A=61293, B=58910, C=58369, D=58370, E=58372, F=58373
-     Groepen:
-       efficient (A–B)      → [61293,58910]
-       average (C–D)        → [58369,58370]
-       less_efficient (E–F) → [58372,58373]
-   - Nisbreedte 45 cm (inbouw): 22706 (optioneel)
------------------------------------------------------------*/
+  const ids = []
 
-const BOL_CATEGORY_ID = {
-  integrated: "18294",
-  "semi-integrated": "18294",
-  undercounter: "18294",
-  freestanding: "18293",
-}
-
-const BOL_WIDTH_INBOUW = { "45": "22706", "60": "22707" } // optioneel
-
-const ENERGY_GROUPS = {
-  efficient: ["61293", "58910"],       // A + B
-  average: ["58369", "58370"],         // C + D
-  less_efficient: ["58372", "58373"],  // E + F
-}
-
-// facetgroep-id voor Geluidsniveau
-const NOISE_GROUP_ID = "42814"
-const NOISE_VALUES = {
-  "41-42": "10847",  // Stil
-  "43-45": "10848",  // Normaal
-  "46-plus": "10849" // Luid
-}
-
-function encodePlusJoined(ids) {
-  // Eén segment met ‘+’ ertussen, URL-encoded als %2B
-  return encodeURIComponent(ids.join("+"))
-}
-
-function buildBolUrl(selections) {
-  const category = selections.category || "integrated"
-  const isFreestanding = category === "freestanding"
-
-  const base = isFreestanding
-    ? `https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/${BOL_CATEGORY_ID.freestanding}/`
-    : `https://www.bol.com/nl/nl/l/inbouw-vaatwassers/${BOL_CATEGORY_ID.integrated}/`
-
-  const segments = []
-
-  // 1) Energielabels ALTIJD gegroepeerd
-  const energyGroup = selections.energyGroup || "efficient" // default kun je aanpassen
-  if (ENERGY_GROUPS[energyGroup]) {
-    segments.push(encodePlusJoined(ENERGY_GROUPS[energyGroup]))
+  // Energy group -> expand to concrete label IDs
+  const groupKey = selections.energyGroup || "none"
+  const labels = ENERGY_GROUPS[groupKey] || []
+  for (const lbl of labels) {
+    const id = ENERGY_LABEL_IDS[lbl]
+    if (id) ids.push(id)
   }
 
-  // 2) Geluidsniveau: altijd als groep+waarde
+  // Noise
   if (selections.noise && selections.noise !== "none") {
-    const val = NOISE_VALUES[selections.noise]
-    if (val) segments.push(`${NOISE_GROUP_ID}%2B${val}`) // already encoded '+'
+    const nid = NOISE_IDS[selections.noise]
+    if (nid) ids.push(nid)
   }
 
-  // 3) (optioneel) Nisbreedte voor inbouw
-  if (!isFreestanding && selections.width && BOL_WIDTH_INBOUW[selections.width]) {
-    segments.push(BOL_WIDTH_INBOUW[selections.width]) // deze werkt zonder groep-id
+  // Placement (only for inbouw varianten)
+  if (categoryKey !== "freestanding") {
+    const pid = PLACEMENT_IDS[categoryKey]
+    if (pid) ids.push(pid)
   }
 
-  const path = segments.length ? `${segments.join("/")}/` : ""
+  // Optional width (only shown/used in advanced mode)
+  if (selections.width && selections.width !== "none") {
+    const map = categoryKey === "freestanding" ? WIDTH_IDS.vrijstaand : WIDTH_IDS.inbouw
+    const wid = map[selections.width]
+    if (wid) ids.push(wid)
+  }
 
-  // sortering: prijs als je een prijsbucket koos
+  // Compose path with raw '+'
+  let url = base
+  if (ids.length) url += ids.join("+") + "/"
+
+  // Query: only sorting (and grid view for consistency)
   const params = new URLSearchParams()
-  if (selections.price && selections.price !== "none") params.set("sort", "price0")
-  params.set("view", "grid")
+  const bucket = PRICE_BUCKETS[selections.price || "none"]
+  if (bucket) {
+    params.set("sort", "price0") // ascending
+    params.set("view", "grid")
+  }
 
-  return `${base}${path}${params.toString() ? `?${params.toString()}` : ""}`
+  const q = params.toString()
+  return q ? `${url}?${q}` : url
 }
 
-// ---------------- Steps (mode → category → noise/price) ----------------
+// --- Wizard steps (mode → category → energyGroup → noise → [width in advanced] → price)
 function getDishwasherSteps(selections) {
-  const mode = selections.mode || null
+  const mode = selections.mode || "standard"
 
   const base = [
     {
@@ -126,38 +126,61 @@ function getDishwasherSteps(selections) {
         { id: "advanced", label: "Geavanceerd", caption: "Meer filters", tint: "from-sky-200 to-indigo-300" },
       ],
     },
-  ]
-
-  const categoryStep = {
-    key: "category",
-    title: "Type vaatwasser",
-    subtitle: "Kies je opstelling.",
-    options: [
-      { id: "integrated", label: "Inbouw – volledig geïntegreerd", caption: "Verborgen bediening" },
-      { id: "semi-integrated", label: "Inbouw – half geïntegreerd", caption: "Zichtbaar paneel" },
-      { id: "undercounter", label: "Inbouw – onderbouw", caption: "Zonder front, onder blad" },
-      { id: "freestanding", label: "Vrijstaand", caption: "Los te plaatsen" },
-    ],
-  }
-
-  const noisePrice = [
+    {
+      key: "category",
+      title: "Type vaatwasser",
+      subtitle: "Kies je opstelling.",
+      options: [
+        { id: "integrated", label: "Inbouw – volledig geïntegreerd", caption: "Verborgen bediening" },
+        { id: "semi-integrated", label: "Inbouw – half geïntegreerd", caption: "Zichtbaar paneel" },
+        { id: "undercounter", label: "Inbouw – onderbouw", caption: "Zonder front, onder blad" },
+        { id: "freestanding", label: "Vrijstaand", caption: "Los te plaatsen" },
+      ],
+    },
+    {
+      key: "energyGroup",
+      title: "Energielabel (gegroepeerd)",
+      subtitle: "Kies een groep. Eén keuze, geen herhaling.",
+      options: [
+        { id: "none", label: "Geen voorkeur", caption: "Overslaan" },
+        { id: "zuinig", label: "Zuinig (A–B)" },
+        { id: "gemiddeld", label: "Gemiddeld (C–D)" },
+        { id: "laag", label: "Laag (E–F)" },
+      ],
+    },
     {
       key: "noise",
       title: "Geluidsniveau",
       subtitle: "Optioneel.",
       options: [
         { id: "none", label: "Geen voorkeur", caption: "Overslaan" },
-        { id: "41-42", label: "41–42 dB (stil)" },
-        { id: "43-45", label: "43–45 dB (normaal)" },
-        { id: "46-plus", label: "46+ dB (luid)" },
+        { id: "41-42", label: "Stil (≤42 dB)" },
+        { id: "43-45", label: "Normaal (42–49 dB)" },
+        { id: "46-plus", label: "Luid (49+ dB)" },
       ],
     },
+  ]
+
+  const advanced = [
+    {
+      key: "width",
+      title: "Breedte",
+      subtitle: "Alleen in geavanceerd.",
+      options: [
+        { id: "none", label: "Geen voorkeur" },
+        { id: "45", label: "45 cm (smal)" },
+        { id: "60", label: "60 cm (standaard)" },
+      ],
+    },
+  ]
+
+  const price = [
     {
       key: "price",
       title: "Prijs",
-      subtitle: "Bepaalt sortering (laag → hoog).",
+      subtitle: "Wordt gebruikt om te sorteren (laag → hoog).",
       options: [
-        { id: "none", label: "Geen voorkeur", caption: "Overslaan" },
+        { id: "none", label: "Geen voorkeur", caption: "Niet sorteren" },
         { id: "budget", label: "Budget", caption: "Tot ± €400" },
         { id: "mid", label: "Midden", caption: "€400–€800" },
         { id: "premium", label: "Premium", caption: "€800+" },
@@ -165,21 +188,7 @@ function getDishwasherSteps(selections) {
     },
   ]
 
-  // Vaste energie-groep (altijd gegroepeerd, geen extra vraag)
-  const energyPreset = {
-    key: "energyGroup",
-    title: "Energiezuinigheid",
-    subtitle: "Gegroepeerd (A–B / C–D / E–F).",
-    options: [
-      { id: "efficient", label: "Zuinig (A–B)" },
-      { id: "average", label: "Gemiddeld (C–D)" },
-      { id: "less_efficient", label: "Minder zuinig (E–F)" },
-    ],
-  }
-
-  if (mode === "standard") return [...base, categoryStep, ...noisePrice, energyPreset]
-  if (mode === "advanced") return [...base, categoryStep, ...noisePrice, energyPreset]
-  return base
+  return mode === "advanced" ? [...base, ...advanced, ...price] : [...base, ...price]
 }
 
 // --- SEO copy & JSON-LD ---
@@ -207,6 +216,8 @@ const faqItems = [
     a: "Volledig geïntegreerd betekent dat de bediening aan de binnenkant zit. Aan de buitenkant zie je alleen je eigen keukenfront, zonder knoppen of display." },
   { q: "Hoe breed is een standaard vaatwasser?",
     a: "Standaard is 60 cm breed. Voor smallere keukens bestaan er 45 cm ‘smalle’ modellen." },
+  { q: "Kan een vaatwasser bovenop een aanrecht worden geplaatst?",
+    a: "Ja, met een compacte vaatwasser. Deze past op aanrecht/tafel en is geschikt voor kleine keukens of studentenkamers." },
   { q: "Hoeveel water verbruikt een moderne vaatwasser gemiddeld?",
     a: "Gemiddeld 6–12 liter per wasbeurt, vaak zuiniger dan handafwas over het jaar." },
   { q: "Is een stille vaatwasser de moeite waard?",
@@ -214,11 +225,11 @@ const faqItems = [
   { q: "Welke extra functies zijn handig in een vaatwasser?",
     a: "Besteklade, automatische deuropening voor beter drogen, intensieve zone voor pannen en een halflaad-programma zijn populaire opties." },
   { q: "Hoe HelpKiezen werkt",
-    a: "We helpen je snel kiezen en sturen je vervolgens door naar partners met jouw filters toegepast. Soms ontvangen we een commissie als je iets koopt via onze links; dit verandert jouw prijs niet. We zijn o.a. affiliate van ... We tonen altijd keuzes op basis van jouw selectie."
+    a: "We helpen je snel kiezen en sturen je vervolgens door naar partners met jouw filters toegepast. Soms ontvangen we een commissie als je iets koopt via onze links; dit verandert jouw prijs niet. We zijn o.a. affiliate van bol.com. We tonen altijd keuzes op basis van jouw selectie."
   }
 ]
 
-// --- Overlay (ongewijzigd) ---
+// --- Overlay content mapping (no external refs)
 const OVERLAY_COPY = {
   inbouw: { title: "Inbouw", body: "Volledig of half geïntegreerd of onderbouw: kies wat bij je keuken past. Let extra op nismaat en front." },
   vrijstaand: { title: "Vrijstaand", body: "Flexibel te plaatsen, geen front nodig en eenvoudig te vervangen." },
@@ -227,6 +238,7 @@ const OVERLAY_COPY = {
   stil: { title: "Stil", body: "Voor open keukens raden we ≤45 dB aan; dat is nauwelijks hoorbaar." }
 }
 
+// --- Page header (hero) with overlay triggers ---
 function Hero({ onOpen }) {
   return (
     <section className="relative isolate overflow-hidden bg-[#fafafa]">
@@ -248,6 +260,7 @@ function Hero({ onOpen }) {
   )
 }
 
+// Simple overlay modal
 function Overlay({ openKey, onClose }) {
   const data = OVERLAY_COPY[openKey] || null
   if (!openKey || !data) return null
@@ -260,7 +273,11 @@ function Overlay({ openKey, onClose }) {
             <h3 className="text-2xl font-bold tracking-tight">{data.title}</h3>
             <p className="mt-2 text-black/80 leading-relaxed">{data.body}</p>
           </div>
-          <button onClick={onClose} className="rounded-full border border-black/10 bg-white px-3 py-1 text-sm font-medium shadow hover:shadow" aria-label="Sluiten">
+          <button
+            onClick={onClose}
+            className="rounded-full border border-black/10 bg-white px-3 py-1 text-sm font-medium shadow hover:shadow"
+            aria-label="Sluiten"
+          >
             Sluiten
           </button>
         </div>
@@ -288,8 +305,7 @@ export default function Vaatwassers() {
         <HelpKiezenWizard
           topic="vaatwasser"
           steps={getDishwasherSteps}
-          buildUrl={(selections) => buildBolUrl(selections)}   // ← bol deeplink (ids in pad)
-          // buildUrl={(selections) => buildInternalUrl(selections)} // ← je interne variant (optioneel)
+          buildUrl={(selections) => buildInternalUrl(selections)}
           interactive={true}
           applyDelayMs={2000}
           showFooter={false}
