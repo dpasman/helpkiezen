@@ -20,8 +20,11 @@ export function Faq({ items = [] }) {
 
   if (!items.length) return null
 
+  // Belangrijk:
+  // - `-mt-6 md:-mt-8` trekt de FAQ omhoog, ook als de parent `space-y-*` gebruikt.
+  // - `mt-4` zorgt dat er toch een kleine, nette ruimte blijft (netto blijft het strak).
   return (
-    <section className="mt-10">
+    <section id="faq" className="-mt-10 md:-mt-10 mt-4">
       {faqLd && <JsonLd data={faqLd} />}
       <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Veelgestelde vragen</h2>
       <div className="space-y-3">
