@@ -169,8 +169,7 @@ function Hero({ onOpen }) {
       <div className="mx-auto max-w-6xl px-6 pt-12 pb-8">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Vaatwasser kiezen</h1>
         <p className="mt-3 text-lg text-black/70 max-w-3xl">
-          Snel de juiste vaatwasser vinden? Hieronder leggen we kort de belangrijkste keuzes uit: inbouw vs. vrijstaand,
-          45 vs. 60 cm en het belang van geluidsniveau.
+          Snel de juiste vaatwasser vinden? Volg de stappen hieronder!
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-sm">
           <button onClick={() => onOpen("inbouw")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Inbouw</button>

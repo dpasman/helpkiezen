@@ -5,11 +5,12 @@ import { JsonLd } from "../seo/JsonLd";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { OutLink } from "../components/OutLink";
 import { Faq } from "../components/Faq";
+import { Disclosure } from "../components/Disclosure";
 import { trackOutbound } from "../utils/analytics";
 
 export default function TopicPage({ topic = "tv", query = "55 inch" }) {
   const title = `Beste ${topic}: kieshulp (${query}) | HelpKiezen`;
-  const desc = `Snel vergelijken en door naar bol.com met de juiste filters voor ${topic}.`;
+  const desc = `Snel vergelijken en door met de juiste filters voor ${topic}.`;
   const url = `https://helpkiezen.nl/${topic}/${encodeURIComponent(query)}`;
 
   const itemListData = {
