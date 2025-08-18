@@ -73,7 +73,7 @@ function defaultBuildUrl(selections, { marketplace, steps, topic }) {
   return mp.search(q)
 }
 
-// Progress bar (replaces dots)
+// Progress bar (header)
 function ProgressBar({ stepIndex, totalSteps, showSummary }) {
   const current = showSummary ? totalSteps : Math.min(stepIndex + 1, totalSteps)
   const pct = Math.max(0, Math.min(100, (current / totalSteps) * 100))
@@ -173,6 +173,39 @@ function SummaryCard({ selections, steps }) {
   )
 }
 
+// Loader with progress bar filling up over applyDelayMs
+const Loader = ({ applyDelayMs = 2000 }) => {
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const start = Date.now()
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - start
+      const pct = Math.min(100, (elapsed / applyDelayMs) * 100)
+      setProgress(pct)
+      if (pct >= 100) clearInterval(interval)
+    }, 50)
+    return () => clearInterval(interval)
+  }, [applyDelayMs])
+
+  return (
+    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
+      <div className="h-14 w-14 animate-spin rounded-full border-4 border-black/10 border-t-black" aria-hidden />
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">Filters toepassen…</h2>
+        <p className="mt-2 text-black/70">Even geduld, we maken alles klaar.</p>
+      </div>
+      <div className="mt-4 h-2 w-64 overflow-hidden rounded-full bg-black/10">
+        <div
+          className="h-full rounded-full bg-black transition-[width] duration-50 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <p className="mt-2 text-sm text-black/60">{Math.round(progress)}%</p>
+    </div>
+  )
+}
+
 export default function HelpKiezenWizard(props) {
   const {
     topic = "",
@@ -183,21 +216,22 @@ export default function HelpKiezenWizard(props) {
     interactive = true,
     initialSelections = {},
     autoNavigate = false,
-    navigateDelayMs = 0
+    navigateDelayMs = 0,
+    applyDelayMs = 2000 // how long the pre-summary loader shows
   } = props
 
   const [selections, setSelections] = useState(interactive ? {} : { ...initialSelections })
+  const [stepIndex, setStepIndex] = useState(0)
+  const [showSummary, setShowSummary] = useState(!interactive)
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false)
+  const [mp] = useState(marketplace)
 
   const steps = useMemo(() => {
-    if (typeof customSteps === 'function') {
+    if (typeof customSteps === "function") {
       try { return customSteps(selections) || [] } catch { return [] }
     }
     return customSteps || exampleSteps
   }, [customSteps, selections])
-
-  const [stepIndex, setStepIndex] = useState(0)
-  const [showSummary, setShowSummary] = useState(!interactive)
-  const [mp] = useState(marketplace)
 
   useEffect(() => {
     if (interactive) {
@@ -221,24 +255,37 @@ export default function HelpKiezenWizard(props) {
   function handleSelect(optionId) {
     setSelections((prev) => ({ ...prev, [current.key]: optionId }))
   }
+
+  // NEXT: on last step, show loader first, then summary
   function next() {
-    if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1)
-    else setShowSummary(true)
+    if (stepIndex < steps.length - 1) {
+      setStepIndex((i) => i + 1)
+    } else {
+      // Show pre-summary loader with progress
+      setIsApplyingFilters(true)
+      setTimeout(() => {
+        setIsApplyingFilters(false)
+        setShowSummary(true)
+      }, Math.max(0, applyDelayMs))
+    }
   }
+
   function prev() {
+    if (isApplyingFilters) return // block navigating back during loader
     if (showSummary) setShowSummary(false)
     else if (stepIndex > 0) setStepIndex((i) => i - 1)
   }
+
   function reset() {
-    if (interactive) { setSelections({}); setStepIndex(0); setShowSummary(false); }
-    else { setSelections({ ...initialSelections }); setShowSummary(true); }
+    if (interactive) { setSelections({}); setStepIndex(0); setShowSummary(false) }
+    else { setSelections({ ...initialSelections }); setShowSummary(true) }
   }
 
   function showRecs() {
-    const builder = typeof buildUrl === 'function' ? buildUrl : (sel, ctx) => {
-      const labels = Object.entries(sel).map(([k, v]) => labelForOption(steps, k, v)).filter(Boolean).join(' ')
+    const builder = typeof buildUrl === "function" ? buildUrl : (sel, ctx) => {
+      const labels = Object.entries(sel).map(([k, v]) => labelForOption(steps, k, v)).filter(Boolean).join(" ")
       const base = MARKETPLACES[ctx.marketplace] || MARKETPLACES.coolblue
-      return base.search((ctx.topic ? ctx.topic + ' ' : '') + labels)
+      return base.search((ctx.topic ? ctx.topic + " " : "") + labels)
     }
     const url = builder(selections, { marketplace: mp, steps, topic })
     if (typeof onShowRecommendations === "function") onShowRecommendations({ selections, marketplace: mp, topic, url })
@@ -256,12 +303,20 @@ export default function HelpKiezenWizard(props) {
     <div className="min-h-screen bg-[#fafafa] text-black">
       <header className="mx-auto max-w-6xl px-6 pt-12 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">helpkiezen</h1>
-        <p className="mt-3 text-lg text-black/70">{showSummary ? "Overzicht van je keuzes." : "Maak een paar keuzes en ga door."}</p>
-        <div className="mt-8"><ProgressBar stepIndex={stepIndex} totalSteps={steps.length} showSummary={showSummary} /></div>
+        <p className="mt-3 text-lg text-black/70">
+          {isApplyingFilters
+            ? "Even geduld… we passen je filters toe."
+            : (showSummary ? "Overzicht van je keuzes." : "Maak een paar keuzes en ga door.")}
+        </p>
+        <div className="mt-8">
+          <ProgressBar stepIndex={stepIndex} totalSteps={steps.length} showSummary={showSummary} />
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {!showSummary && interactive ? (
+        {isApplyingFilters ? (
+          <Loader applyDelayMs={applyDelayMs} />
+        ) : !showSummary && interactive ? (
           <>
             <section className="mb-6 text-center">
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{current.title || "Maak een keuze"}</h2>
@@ -280,26 +335,33 @@ export default function HelpKiezenWizard(props) {
               <p className="mt-2 text-black/70">Dit is je selectie. Klopt alles? Dan kun je hiermee verder.</p>
             </section>
             <SummaryCard selections={selections} steps={steps} />
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={showRecs}
+                className="rounded-xl bg-blue-600 px-6 py-3 text-lg font-bold text-white shadow hover:bg-blue-700 transition"
+              >
+                Laat mij {topic || "producten"}(s zien
+              </button>
+            </div>
           </>
         )}
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          {interactive ? <SummaryChips selections={selections} steps={steps} /> : <div />}
-          <div className="flex items-center gap-3">
-            <button onClick={reset} className="rounded-full border border-black/10 bg-white px-5 py-2 text-sm font-medium shadow-sm hover:shadow">Reset</button>
-            <button onClick={prev} disabled={!showSummary && stepIndex === 0} className="rounded-full border border-black/10 bg-white px-5 py-2 text-sm font-medium shadow-sm disabled:opacity-50 hover:shadow">Terug</button>
-            {!showSummary ? (
-              <button onClick={next} disabled={!selections[current.key]} className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90 disabled:opacity-50">
-                {stepIndex < steps.length - 1 ? "Volgende" : "Naar samenvatting"}
-              </button>
-            ) : (
-              <button onClick={showRecs} className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90">Toon aanbevelingen</button>
-            )}
+        {/* Bottom controls (hide while loading) */}
+        {!isApplyingFilters && (
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row">
+            {interactive ? <SummaryChips selections={selections} steps={steps} /> : <div />}
+            <div className="flex items-center gap-3">
+              <button onClick={reset} className="rounded-full border border-black/10 bg-white px-5 py-2 text-sm font-medium shadow-sm hover:shadow">Reset</button>
+              <button onClick={prev} disabled={!showSummary && stepIndex === 0} className="rounded-full border border-black/10 bg-white px-5 py-2 text-sm font-medium shadow-sm disabled:opacity-50 hover:shadow">Terug</button>
+              {!showSummary && (
+                <button onClick={next} disabled={!selections[current.key]} className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90 disabled:opacity-50">
+                  {stepIndex < steps.length - 1 ? "Volgende" : "Naar samenvatting"}
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </main>
-
-      <footer className="mx-auto max-w-6xl px-6 pb-16 pt-6 text-center text-xs text-black/50">Ontwerpstijl geïnspireerd op de "Stunning Templates"-galerij.</footer>
     </div>
   )
 }

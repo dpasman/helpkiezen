@@ -5,7 +5,6 @@ import { JsonLd } from "../seo/JsonLd";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { OutLink } from "../components/OutLink";
 import { Faq } from "../components/Faq";
-import { Disclosure } from "../components/Disclosure";
 import { trackOutbound } from "../utils/analytics";
 
 export default function TopicPage({ topic = "tv", query = "55 inch" }) {

@@ -1,39 +1,45 @@
-// English code as requested
-import React from "react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import React, { useEffect } from "react"
 
-export function withHelmet(Component) {
-  return function Wrapped(props) {
-    return (
-      <HelmetProvider>
-        <Component {...props} />
-      </HelmetProvider>
-    );
-  };
-}
+export function SeoHead({ title, description, url, canonical }) {
+  useEffect(() => {
+    if (title) document.title = title
 
-export function SeoHead({
-  title,
-  description,
-  url,
-  image,
-  canonical,
-  noindex = false,
-}) {
-  return (
-    <Helmet>
-      {title && <title>{title}</title>}
-      {description && <meta name="description" content={description} />}
-      {noindex && <meta name="robots" content="noindex,nofollow" />}
-      {canonical && <link rel="canonical" href={canonical} />}
-      {/* Open Graph */}
-      {title && <meta property="og:title" content={title} />}
-      {description && <meta property="og:description" content={description} />}
-      {url && <meta property="og:url" content={url} />}
-      <meta property="og:type" content="website" />
-      {image && <meta property="og:image" content={image} />}
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-    </Helmet>
-  );
+    const ensure = (name, attr = "name") => {
+      let el = document.querySelector(`meta[${attr}="${name}"]`)
+      if (!el) {
+        el = document.createElement("meta")
+        el.setAttribute(attr, name)
+        document.head.appendChild(el)
+      }
+      return el
+    }
+
+    if (description) {
+      const metaDesc = ensure("description")
+      metaDesc.setAttribute("content", description)
+    }
+
+    if (url) {
+      const ogUrl = ensure("og:url", "property")
+      ogUrl.setAttribute("content", url)
+      const ogType = ensure("og:type", "property")
+      ogType.setAttribute("content", "website")
+      const ogTitle = ensure("og:title", "property")
+      ogTitle.setAttribute("content", title || "")
+      const ogDesc = ensure("og:description", "property")
+      ogDesc.setAttribute("content", description || "")
+    }
+
+    if (canonical) {
+      let link = document.querySelector(`link[rel="canonical"]`)
+      if (!link) {
+        link = document.createElement("link")
+        link.setAttribute("rel", "canonical")
+        document.head.appendChild(link)
+      }
+      link.setAttribute("href", canonical)
+    }
+  }, [title, description, url, canonical])
+
+  return null
 }
