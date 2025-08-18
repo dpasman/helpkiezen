@@ -131,10 +131,10 @@ function getDishwasherSteps(selections) {
       title: "Type vaatwasser",
       subtitle: "Kies je opstelling.",
       options: [
-    { id: 'integrated', label: 'Inbouw – volledig geïntegreerd', caption: 'Verborgen bediening', img: '/images/integrated.jpg', imgAlt: 'Volledig geïntegreerde vaatwasser' },
-    { id: 'semi-integrated', label: 'Inbouw – half geïntegreerd', caption: 'Zichtbaar paneel', img: '/images/semi.jpg', imgAlt: 'Half geïntegreerde vaatwasser' },
-    { id: 'undercounter', label: 'Inbouw – onderbouw', caption: 'Zonder front, onder blad', img: '/images/undercounter.jpg', imgAlt: 'Onderbouw vaatwasser' },
-    { id: 'freestanding', label: 'Vrijstaand', caption: 'Los te plaatsen', img: '/images/freestanding.jpg', imgAlt: 'Vrijstaande vaatwasser' },
+    { id: 'integrated', label: 'Inbouw – volledig geïntegreerd', caption: 'Verborgen bediening', img: '/images/integrated.webp', imgAlt: 'Volledig geïntegreerde vaatwasser' },
+    // { id: 'semi-integrated', label: 'Inbouw – half geïntegreerd', caption: 'Zichtbaar paneel', img: '/images/semi.webp', imgAlt: 'Half geïntegreerde vaatwasser' },
+    { id: 'undercounter', label: 'Inbouw – onderbouw', caption: 'Zonder front, onder blad', img: '/images/undercounter.webp', imgAlt: 'Onderbouw vaatwasser' },
+    { id: 'freestanding', label: 'Vrijstaand', caption: 'Los te plaatsen', img: '/images/freestanding.webp', imgAlt: 'Vrijstaande vaatwasser' },
       ],
     },
     {
