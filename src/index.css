@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Footer styling */
+/* --- Footer (simpel) --- */
 .site-footer {
   margin-top: 2.5rem;
   border-top: 1px solid rgb(229 231 235); /* gray-200 */
@@ -19,4 +19,18 @@
 .footer-copy {
   font-size: 0.875rem;
   color: rgb(75 85 99); /* gray-600 */
+}
+
+/* --- FAQ: forceer strak onder de knoppen --- */
+/* Pakt verschillende oorzaken tegelijk aan: mt-auto, grote space-y, align issues in flex/grid */
+.faq-tight {
+  margin-top: 0.75rem !important;   /* strak onder je knoppen */
+  margin-bottom: 0 !important;
+  align-self: flex-start !important; /* negeer justify-between/align-stretch in parent */
+}
+
+/* In 'space-y-*' contexten wordt extra marge via :not(:first-child) toegevoegd.
+   Deze reset voorkomt dat de FAQ alsnog “meeveert” als child in zo'n container. */
+.faq-tight:not(:first-child) {
+  margin-top: 0.75rem !important;
 }

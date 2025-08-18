@@ -340,7 +340,7 @@ export default function HelpKiezenWizard(props) {
                 onClick={showRecs}
                 className="rounded-xl bg-blue-600 px-6 py-3 text-lg font-bold text-white shadow hover:bg-blue-700 transition"
               >
-                Laat mij {topic || "producten"}(s zien
+                Laat mij {topic || "producten"}(s) zien
               </button>
             </div>
           </>

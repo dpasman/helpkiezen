@@ -21,10 +21,10 @@ export function Faq({ items = [] }) {
   if (!items.length) return null
 
   // Belangrijk:
-  // - `-mt-6 md:-mt-8` trekt de FAQ omhoog, ook als de parent `space-y-*` gebruikt.
-  // - `mt-4` zorgt dat er toch een kleine, nette ruimte blijft (netto blijft het strak).
+  // - 'faq-tight' forceert kleine topmarge en schakelt eventuele 'mt-auto' of grote gaps uit.
+  // - 'self-start' voorkomt dat parent flex alignment/space-between het element omlaag duwt.
   return (
-    <section id="faq" className="-mt-10 md:-mt-10 mt-4">
+    <section id="faq" className="faq-tight self-start">
       {faqLd && <JsonLd data={faqLd} />}
       <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Veelgestelde vragen</h2>
       <div className="space-y-3">
