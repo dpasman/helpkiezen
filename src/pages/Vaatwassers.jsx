@@ -9,11 +9,11 @@ import { Disclosure } from "../components/Disclosure"
 
 // --- Internal mapping only (no external domains) ---
 const CATEGORY_PATH = {
-  integrated: "/vaatwassers/zoekresultaat",
-  "semi-integrated": "/vaatwassers/zoekresultaat",
-  undercounter: "/vaatwassers/zoekresultaat",
-  freestanding: "/vaatwassers/zoekresultaat",
-}
+  integrated: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  'semi-integrated': 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  undercounter: 'https://www.bol.com/nl/nl/l/inbouw-vaatwassers/18294/',
+  freestanding: 'https://www.bol.com/nl/nl/l/vrijstaande-vaatwassers/18293/',
+};
 
 // Price buckets → adjust freely
 const PRICE_BUCKETS = {
