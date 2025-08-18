@@ -12,7 +12,6 @@
 +    <meta name="theme-color" content="#ffffff">
 +    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
 +    <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
-+    <link rel="dns-prefetch" href="https://www.bol.com">
      <title>HelpKiezen</title>
    </head>
    <body>

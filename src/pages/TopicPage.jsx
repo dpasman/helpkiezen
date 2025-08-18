@@ -52,7 +52,7 @@ export default function TopicPage({ topic = "tv", query = "55 inch" }) {
         </ul>
         <p className="mt-4">
           <OutLink href={bolHref} onClick={() => trackOutbound(`${topic}:${query}`)}>
-            Bekijk gefilterde resultaten bij bol.com
+            Bekijk gefilterde resultaten.
           </OutLink>
         </p>
       </section>
