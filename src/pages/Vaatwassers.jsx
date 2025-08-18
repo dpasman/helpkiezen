@@ -131,10 +131,10 @@ function getDishwasherSteps(selections) {
       title: "Type vaatwasser",
       subtitle: "Kies je opstelling.",
       options: [
-        { id: "integrated", label: "Inbouw – volledig geïntegreerd", caption: "Verborgen bediening" },
-        { id: "semi-integrated", label: "Inbouw – half geïntegreerd", caption: "Zichtbaar paneel" },
-        { id: "undercounter", label: "Inbouw – onderbouw", caption: "Zonder front, onder blad" },
-        { id: "freestanding", label: "Vrijstaand", caption: "Los te plaatsen" },
+    { id: 'integrated', label: 'Inbouw – volledig geïntegreerd', caption: 'Verborgen bediening', img: '/images/integrated.jpg', imgAlt: 'Volledig geïntegreerde vaatwasser' },
+    { id: 'semi-integrated', label: 'Inbouw – half geïntegreerd', caption: 'Zichtbaar paneel', img: '/images/semi.jpg', imgAlt: 'Half geïntegreerde vaatwasser' },
+    { id: 'undercounter', label: 'Inbouw – onderbouw', caption: 'Zonder front, onder blad', img: '/images/undercounter.jpg', imgAlt: 'Onderbouw vaatwasser' },
+    { id: 'freestanding', label: 'Vrijstaand', caption: 'Los te plaatsen', img: '/images/freestanding.jpg', imgAlt: 'Vrijstaande vaatwasser' },
       ],
     },
     {
@@ -225,7 +225,7 @@ const faqItems = [
   { q: "Welke extra functies zijn handig in een vaatwasser?",
     a: "Besteklade, automatische deuropening voor beter drogen, intensieve zone voor pannen en een halflaad-programma zijn populaire opties." },
   { q: "Hoe HelpKiezen werkt",
-    a: "We helpen je snel kiezen en sturen je vervolgens door naar partners met jouw filters toegepast. Soms ontvangen we een commissie als je iets koopt via onze links; dit verandert jouw prijs niet. We zijn o.a. affiliate van ... We tonen altijd keuzes op basis van jouw selectie."
+    a: "HelpKiezen toont doorverwijzingen naar bol.com. Zodra we officieel aangesloten zijn bij het bol.com partnerprogramma, kunnen we daar een commissie voor ontvangen. Dit verandert niets aan jouw prijs."
   }
 ]
 
@@ -243,22 +243,38 @@ function Hero({ onOpen }) {
   return (
     <section className="relative isolate overflow-hidden bg-[#fafafa]">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 to-zinc-200" />
-      <div className="mx-auto max-w-6xl px-6 pt-12 pb-8">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Vaatwasser kiezen</h1>
-        <p className="mt-3 text-lg text-black/70 max-w-3xl">
-          Snel de juiste vaatwasser vinden? Volg de stappen hieronder!
-        </p>
-        <div className="mt-6 flex flex-wrap gap-2 text-sm">
-          <button onClick={() => onOpen("inbouw")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Inbouw</button>
-          <button onClick={() => onOpen("vrijstaand")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Vrijstaand</button>
-          <button onClick={() => onOpen("45cm")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">45 cm</button>
-          <button onClick={() => onOpen("60cm")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">60 cm</button>
-          <button onClick={() => onOpen("stil")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Stil</button>
+      <div className="mx-auto max-w-6xl px-6 pt-12 pb-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Vaatwasser kiezen</h1>
+          <p className="mt-3 text-lg text-black/70">
+            Snel de juiste vaatwasser vinden? Hieronder leggen we kort de belangrijkste keuzes uit.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2 text-sm">
+            <button onClick={() => onOpen("inbouw")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Inbouw</button>
+            <button onClick={() => onOpen("vrijstaand")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Vrijstaand</button>
+            <button onClick={() => onOpen("45cm")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">45 cm</button>
+            <button onClick={() => onOpen("60cm")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">60 cm</button>
+            <button onClick={() => onOpen("stil")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Stil</button>
+            <button onClick={() => onOpen("werkwijze")} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow hover:shadow">Hoe HelpKiezen werkt</button>
+          </div>
         </div>
+
+        {/* Image */}
+        {/* <div className="relative">
+          <img
+            src="/images/dishwasher-hero.jpg"
+            srcSet="/images/dishwasher-hero-640.jpg 640w, /images/dishwasher-hero-1280.jpg 1280w"
+            sizes="(max-width: 768px) 100vw, 600px"
+            alt="Moderne keuken met geopende geïntegreerde vaatwasser"
+            loading="eager"
+            className="w-full h-auto rounded-2xl shadow-sm border border-black/5 object-cover"
+          />
+        </div> */}
       </div>
     </section>
   )
 }
+
 
 // Simple overlay modal
 function Overlay({ openKey, onClose }) {

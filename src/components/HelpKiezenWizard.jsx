@@ -88,31 +88,49 @@ function Badge({ children }) {
   return <span className="absolute left-2 top-2 rounded-full bg-black px-2 py-1 text-xs font-medium text-white shadow">{children}</span>
 }
 
-function Thumbnail({ Icon, tint }) {
+// ✅ Thumbnail die 'img' verwacht en altijd label/caption zichtbaar laat
+function Thumbnail({ Icon, tint, img, imgAlt }) {
+  const hasImg = !!img
   const hasIcon = typeof Icon === "function"
   const safeTint = tint || "from-slate-200 to-zinc-300"
+
   return (
     <div className={"relative h-44 w-full overflow-hidden rounded-xl bg-gradient-to-br " + safeTint + " shadow-sm"}>
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_20%_20%,white,transparent_60%)]" />
-      {hasIcon ? (<Icon className="absolute right-6 top-6 h-12 w-12 opacity-60" />) : (<div className="absolute right-6 top-6 h-12 w-12 rounded-lg bg-white/40" />)}
-      <div className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-white/30" />
-      <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/20" />
+      {/* afbeelding eerst, zodat overlays eroverheen kunnen */}
+      {hasImg && (
+        <img
+          src={img}
+          alt={imgAlt || ""}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none' }} // fallback naar tint
+        />
+      )}
+
+      {/* subtiele overlay (licht) */}
+      <div className="pointer-events-none absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_20%_20%,white,transparent_60%)]" />
+
+      {/* icon als er geen afbeelding is */}
+      {!hasImg && (hasIcon ? (
+        <Icon className="absolute right-6 top-6 h-12 w-12 opacity-60" />
+      ) : (
+        <div className="absolute right-6 top-6 h-12 w-12 rounded-lg bg-white/40" />
+      ))}
     </div>
   )
 }
 
 function OptionCard({ option, selected, onSelect }) {
   const Icon = typeof option?.icon === "function" ? option.icon : null
-  const baseScale = selected ? "scale-[1.02]" : "scale-100"
-  const hoverScaleSelected = "group-hover:scale-[1.05]"
-  const hoverScaleUnselected = "group-hover:scale-[1.02]"
-  const hoverScale = selected ? hoverScaleSelected : hoverScaleUnselected
+  const scale = selected ? "scale-[1.02]" : "scale-100"
+  const hover = selected ? "group-hover:scale-[1.05]" : "group-hover:scale-[1.02]"
 
   return (
-    <button onClick={() => onSelect(option.id)} className={["group text-left", "focus:outline-none"].join(" ")}>
-      <div className={["relative rounded-2xl border border-black/5 bg-white shadow-sm transition-transform duration-200 ease-out transform", "group-hover:shadow-md", baseScale, hoverScale].join(" ")}>
+    <button onClick={() => onSelect(option.id)} className="group text-left focus:outline-none">
+      <div className={["relative rounded-2xl border border-black/5 bg-white shadow-sm transition-transform duration-200 ease-out transform", "group-hover:shadow-md", scale, hover].join(" ")}>
         {option.badge && <Badge>{option.badge}</Badge>}
-        <Thumbnail Icon={Icon} tint={option.tint} />
+        {/* ⬇️ let op: we geven 'img' door, niet 'imgSrc' */}
+        <Thumbnail Icon={Icon} tint={option.tint} img={option.img} imgAlt={option.imgAlt} />
         <div className="flex items-center justify-between p-4">
           <div>
             <div className="text-lg font-semibold tracking-tight">{option.label}</div>
@@ -124,6 +142,7 @@ function OptionCard({ option, selected, onSelect }) {
     </button>
   )
 }
+
 
 function SummaryChips({ selections, steps }) {
   const items = Object.entries(selections).filter(([, v]) => !!v)
