@@ -50,7 +50,6 @@ const exampleSteps = [
 
 // Marketplaces (fallback search)
 const MARKETPLACES = {
-  coolblue: { name: "Coolblue", search: (q) => `https://www.coolblue.nl/zoeken?query=${encodeURIComponent(q)}` },
   bol: { name: "Bol", search: (q) => `https://www.bol.com/nl/nl/s/?searchtext=${encodeURIComponent(q)}` }
 }
 
@@ -68,7 +67,7 @@ function selectionKeywords(selections, steps, topic) {
   return [topic, ...labels].filter(Boolean).join(" ")
 }
 function defaultBuildUrl(selections, { marketplace, steps, topic }) {
-  const mp = MARKETPLACES[marketplace] || MARKETPLACES.coolblue
+  const mp = MARKETPLACES[marketplace]
   const q = selectionKeywords(selections, steps, topic || "")
   return mp.search(q)
 }
@@ -228,7 +227,7 @@ const Loader = ({ applyDelayMs = 2000 }) => {
 export default function HelpKiezenWizard(props) {
   const {
     topic = "",
-    marketplace = "coolblue",
+    marketplace = "bol",
     steps: customSteps,
     buildUrl,
     onShowRecommendations,
@@ -303,7 +302,7 @@ export default function HelpKiezenWizard(props) {
   function showRecs() {
     const builder = typeof buildUrl === "function" ? buildUrl : (sel, ctx) => {
       const labels = Object.entries(sel).map(([k, v]) => labelForOption(steps, k, v)).filter(Boolean).join(" ")
-      const base = MARKETPLACES[ctx.marketplace] || MARKETPLACES.coolblue
+      const base = MARKETPLACES[ctx.marketplace]
       return base.search((ctx.topic ? ctx.topic + " " : "") + labels)
     }
     const url = builder(selections, { marketplace: mp, steps, topic })
@@ -321,7 +320,7 @@ export default function HelpKiezenWizard(props) {
   return (
     <div className="min-h-screen bg-[#fafafa] text-black">
       <header className="mx-auto max-w-6xl px-6 pt-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">helpkiezen</h1>
+        {/* <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Hoe wil je kiezen?</h1> */}
         <p className="mt-3 text-lg text-black/70">
           {isApplyingFilters
             ? "Even geduld… we passen je filters toe."
